@@ -10,7 +10,7 @@ namespace DataLayer
 {
     public class ApplicationContext : DbContext
     {
-        public DbSet<Employee> Employees;
+        public DbSet<Employee> Employees { get; set; }
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options)
             : base(options)

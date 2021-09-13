@@ -1,8 +1,117 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+	ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<table id="dg" title="Employees" class="easyui-datagrid" style="width:550px;height:250px"
+	   url="@Url.Action("GetEmployees", "Employee")"
+	   toolbar="#toolbar"
+	   rownumbers="true" fitColumns="true" singleSelect="true">
+	<thead>
+		<tr>
+			<th field="PersonnelNumber" width="50">PersonnelNumber</th>
+			<th field="FullName" width="50">FullName</th>
+			<th field="Sex" width="50">Sex</th>
+			<th field="Birthday" width="50">Birthday</th>
+			<th field="IsRegular" width="50">IsRegular</th>
+		</tr>
+	</thead>
+</table>
+<div id="toolbar">
+	<a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newEmployee()">New Employee</a>
+	<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editEmployee()">Edit Employee</a>
+	<a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyEmployee()">Remove Employee</a>
 </div>
+
+
+
+
+
+
+<div id="dlg" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px"
+	 closed="true" buttons="#dlg-buttons">
+	<div class="ftitle">Employee Information</div>
+	<form id="fm" method="post" novalidate>
+		<div class="fitem">
+			<label>Full name:</label>
+			<input name="FullName" class="easyui-textbox" required="true">
+		</div>
+		<div class="fitem">
+			<label>Sex:</label>
+			<select id="Sex" class="easyui-combobox" name="Sex" style="width:200px;">
+				<option value="0">Male</option>
+				<option value="1">Female</option>
+			</select>
+		</div>
+		<div class="fitem">
+			<label>Birthday:</label>
+			<input class="easyui-datetimebox" name="Birthday" data-options="required:true,showSeconds:false" style="width:150px">
+		</div>
+		<div class="fitem">
+			<input class="easyui-checkbox" id="IsRegular" name="IsRegular" label="IsRegular:">
+		</div>
+	</form>
+</div>
+<div id="dlg-buttons">
+	<a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveEmployee()" style="width:90px">Save</a>
+	<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">Cancel</a>
+</div>
+
+@section Scripts{
+<script>
+	function newEmployee(){
+		$('#dlg').dialog('open').dialog('setTitle','New Employee');
+		$('#fm').form('clear');
+		url = '@Url.Action("Save", "Employee")';
+	}
+
+	function editEmployee(){
+		var row = $('#dg').datagrid('getSelected');
+		if (row){
+			$('#dlg').dialog('open').dialog('center').dialog('setTitle','Edit Employee');
+			$('#fm').form('load',row);
+			url = '@Url.Action("Update", "Employee")?id='+row.id;
+		}
+	}
+
+	function saveEmployee(){
+		$('#fm').form('submit',{
+			url: url,
+			onSubmit: function(){
+				return $(this).form('validate');
+			},
+			success: function(result){
+				var result = eval('('+result+')');
+				if (result.errorMsg){
+					$.messager.show({
+						title: 'Error',
+						msg: result.errorMsg
+					});
+				} else {
+					$('#dlg').dialog('close');        // close the dialog
+					$('#dg').datagrid('reload');    // reload the user data
+				}
+			}
+		});
+	}
+
+	function destroyEmployee(){
+		var row = $('#dg').datagrid('getSelected');
+		if (row){
+			$.messager.confirm('Confirm','Are you sure you want to destroy this user?',function(r){
+				if (r){
+					$.post('@Url.Action("Delete", "Employee")',{id:row.id},function(result){
+						if (result.success){
+							$('#dg').datagrid('reload');    // reload the user data
+						} else {
+							$.messager.show({    // show error message
+								title: 'Error',
+								msg: result.errorMsg
+							});
+						}
+					},'json');
+				}
+			});
+		}
+	}
+</script>
+}
