@@ -1,5 +1,5 @@
 ﻿@{
-	ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Home Page";
 }
 
 <table id="dg" title="Employees" class="easyui-datagrid" style="width:550px;height:250px"
@@ -7,22 +7,22 @@
        toolbar="#toolbar"
        fitColumns="true" singleSelect="true">
     <thead>
-    <tr>
-        <th field="id" hidden="true">Id</th>
-        <th field="personnelNumber" width="50">PersonnelNumber</th>
-        <th field="fullName" width="50">FullName</th>
-        <th field="sex" width="50" data-options="formatter:formatSex">Sex</th>
-        <th field="birthday" width="50" data-options="formatter:formatDate">Birthday</th>
-        <th field="isRegular" data-options="formatter:formatCheckbox">IsRegular</th>
-    </tr>
+        <tr>
+            <th field="id" hidden="true">Id</th>
+            <th field="personnelNumber" width="50">PersonnelNumber</th>
+            <th field="fullName" width="50">FullName</th>
+            <th field="sex" width="50" data-options="formatter:formatSex">Sex</th>
+            <th field="birthday" width="50" data-options="formatter:formatDate">Birthday</th>
+            <th field="isRegular" data-options="formatter:formatCheckbox">IsRegular</th>
+        </tr>
     </thead>
 </table>
 <div id="pp" class="easyui-pagination" style="background: #efefef; border: 1px solid #ccc; width: 550px;">
 </div>
 <div id="toolbar">
-	<a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newEmployee()">New Employee</a>
-	<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editEmployee()">Edit Employee</a>
-	<a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyEmployee()">Remove Employee</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newEmployee()">New Employee</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editEmployee()">Edit Employee</a>
+    <a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="destroyEmployee()">Remove Employee</a>
 </div>
 
 
@@ -31,132 +31,143 @@
 
 
 <div id="dlg" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px"
-	 closed="true" buttons="#dlg-buttons">
-	<div class="ftitle">Employee Information</div>
-	<form id="fm" method="post" novalidate>
-		<div class="fitem">
-			<label>Full name:</label>
-			<input name="FullName" class="easyui-textbox" required="true">
-		</div>
-		<div class="fitem">
-			<label>Sex:</label>
-			<select id="Sex" class="easyui-combobox" name="Sex" style="width:200px;" data-options="required:true, prompt:'Select sex',value:''">
-				<option value="0">Male</option>
-				<option value="1">Female</option>
-			</select>
-		</div>
-		<div class="fitem">
-			<input class="easyui-datebox" labelPosition="top" label="Birthday:" name="Birthday" data-options="showSeconds:false" required="required" style="width:150px">
-		</div>
-		<div class="fitem">
+     closed="true" buttons="#dlg-buttons">
+    <div class="ftitle">Employee Information</div>
+    <form id="fm" method="post" novalidate>
+        <div class="fitem">
+            <label>Full name:</label>
+            <input name="FullName" class="easyui-textbox" required="true">
+        </div>
+        <div class="fitem">
+            <label>Sex:</label>
+            <select id="Sex" class="easyui-combobox" name="Sex" style="width:200px;" data-options="required:true, prompt:'Select sex',value:''">
+                <option value="0">Male</option>
+                <option value="1">Female</option>
+            </select>
+        </div>
+        <div class="fitem">
+            <input class="easyui-datebox" labelPosition="top" label="Birthday:" name="Birthday" data-options="showSeconds:false" required="required" style="width:150px">
+        </div>
+        <div class="fitem">
             <input class="easyui-checkbox" id="cbIsRegular" label="IsRegular:">
             <input id="IsRegular" name="IsRegular" type="hidden" value="false" />
-		</div>
-	</form>
+        </div>
+    </form>
 </div>
 <div id="dlg-buttons">
-	<a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveEmployee()" style="width:90px">Save</a>
-	<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript:$('#dlg').dialog('close')" style="width:90px">Cancel</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton c6" iconCls="icon-ok" onclick="saveEmployee()" style="width:90px">Save</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" onclick="javascript: $('#dlg').dialog('close')" style="width:90px">Cancel</a>
 </div>
 
-@section Scripts{
-    <script>
-        $(function () {
-            $.ajax({
-                url: '@Url.Action("GetTotal", "Employee")'
-            }).done(function(result) {
-                $('#pp').pagination({
-                    total: result,
-                    pageSize: 10
-                });
-            });
 
-            $('#cbIsRegular').checkbox({
-                onChange: function(value) {
-                    $('#IsRegular').val(value);
-                }
+
+@using (Html.BeginForm("UploadJson", "Employee", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <div class="file-uploader" style="width: 550px;">
+        <label for="jsonFile">Upload json</label>
+        <input type="file" id="jsonFile" name="jsonFile" accept=".json"/>
+        <button type="submit">Submit</button>
+    </div>
+}
+
+@section Scripts
+{
+    <script>
+    $(function () {
+        $.ajax({
+            url: '@Url.Action("GetTotal", "Employee")'
+        }).done(function (result) {
+            $('#pp').pagination({
+                total: result,
+                pageSize: 10
             });
         });
 
-        function formatSex(value, row, index)
-        {
-            if (value == 0) {
-                return 'Male';
-            } else {
-                return 'Female';
+        $('#cbIsRegular').checkbox({
+            onChange: function (value) {
+                $('#IsRegular').val(value);
             }
+        });
+    });
+
+    function formatSex(value, row, index) {
+        if (value == 0) {
+            return 'Male';
+        } else {
+            return 'Female';
         }
+    }
 
-        function formatCheckbox(value, row, index) {
-            return '<input type="checkbox" disabled="disabled"' + (value ? 'checked="checked"' : '') + '/>';
+    function formatCheckbox(value, row, index) {
+        return '<input type = "checkbox" disabled = "disabled" ' + (value ? ' checked = "checked" ' : ' ') + ' />';
+    }
+
+    function formatDate(date) {
+        var d = new Date(date || Date.now()),
+            month = '' + (d.getMonth() + 1),
+            day = '' + d.getDate(),
+            year = d.getFullYear();
+
+        if (month.length < 2) month = '0' + month;
+        if (day.length < 2) day = '0' + day;
+
+        return [day, month, year].join('/');
+    }
+
+    function newEmployee() {
+        $('#dlg').dialog('open').dialog('setTitle', 'New Employee');
+        $('#fm').form('clear');
+        url = '@Url.Action("Save", "Employee")';
+    }
+
+    function editEmployee() {
+        var row = $('#dg').datagrid('getSelected');
+        if (row) {
+            $('#dlg').dialog('open').dialog('center').dialog('setTitle', 'Edit Employee');
+            $('#fm').form('load', row);
+            url = '@Url.Action("Update", "Employee")?id=' + row.id;
         }
+    }
 
-        function formatDate(date) {
-            var d = new Date(date || Date.now()),
-                month = '' + (d.getMonth() + 1),
-                day = '' + d.getDate(),
-                year = d.getFullYear();
-
-            if (month.length < 2) month = '0' + month;
-            if (day.length < 2) day = '0' + day;
-
-            return [day, month, year].join('/');
-        }
-
-        function newEmployee(){
-            $('#dlg').dialog('open').dialog('setTitle','New Employee');
-            $('#fm').form('clear');
-            url = '@Url.Action("Save", "Employee")';
-        }
-
-        function editEmployee(){
-            var row = $('#dg').datagrid('getSelected');
-            if (row){
-                $('#dlg').dialog('open').dialog('center').dialog('setTitle','Edit Employee');
-                $('#fm').form('load',row);
-                url = '@Url.Action("Update", "Employee")?id='+row.id;
+    function saveEmployee() {
+        $('#fm').form('submit', {
+            url: url,
+            onSubmit: function () {
+                return $(this).form('validate');
+            },
+            success: function (result) {
+                var result = eval('(' + result + ')');
+                if (result.errorMsg) {
+                    $.messager.show({
+                        title: 'Error',
+                        msg: result.errorMsg
+                    });
+                } else {
+                    $('#dlg').dialog('close');        // close the dialog
+                    $('#dg').datagrid('reload');    // reload the user data
+                }
             }
-        }
+        });
+    }
 
-        function saveEmployee(){
-            $('#fm').form('submit',{
-                url: url,
-                onSubmit: function(){
-                    return $(this).form('validate');
-                },
-                success: function(result){
-                    var result = eval('('+result+')');
-                    if (result.errorMsg){
-                        $.messager.show({
-                            title: 'Error',
-                            msg: result.errorMsg
-                        });
-                    } else {
-                        $('#dlg').dialog('close');        // close the dialog
-                        $('#dg').datagrid('reload');    // reload the user data
-                    }
+    function destroyEmployee() {
+        var row = $('#dg').datagrid('getSelected');
+        if (row) {
+            $.messager.confirm('Confirm', 'Are you sure you want to destroy this user?', function (r) {
+                if (r) {
+                    $.post('@Url.Action("Delete", "Employee")', { id: row.id }, function (result) {
+                        if (result.success) {
+                            $('#dg').datagrid('reload');    // reload the user data
+                        } else {
+                            $.messager.show({    // show error message
+                                title: 'Error',
+                                msg: result.errorMsg
+                            });
+                        }
+                    }, 'json');
                 }
             });
         }
-
-        function destroyEmployee(){
-            var row = $('#dg').datagrid('getSelected');
-            if (row){
-                $.messager.confirm('Confirm','Are you sure you want to destroy this user?',function(r){
-                    if (r){
-                        $.post('@Url.Action("Delete", "Employee")',{id:row.id},function(result){
-                            if (result.success){
-                                $('#dg').datagrid('reload');    // reload the user data
-                            } else {
-                                $.messager.show({    // show error message
-                                    title: 'Error',
-                                    msg: result.errorMsg
-                                });
-                            }
-                        },'json');
-                    }
-                });
-            }
-        }
+    }
     </script>
 }
