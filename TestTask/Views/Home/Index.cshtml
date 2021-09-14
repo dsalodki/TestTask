@@ -3,19 +3,22 @@
 }
 
 <table id="dg" title="Employees" class="easyui-datagrid" style="width:550px;height:250px"
-	   url="@Url.Action("GetEmployees", "Employee")"
-	   toolbar="#toolbar"
-	   rownumbers="true" fitColumns="true" singleSelect="true">
-	<thead>
-		<tr>
-			<th field="PersonnelNumber" width="50">PersonnelNumber</th>
-			<th field="FullName" width="50">FullName</th>
-			<th field="Sex" width="50">Sex</th>
-			<th field="Birthday" width="50">Birthday</th>
-			<th field="IsRegular" width="50">IsRegular</th>
-		</tr>
-	</thead>
+       url="@Url.Action("GetEmployees", "Employee")"
+       toolbar="#toolbar"
+       fitColumns="true" singleSelect="true">
+    <thead>
+    <tr>
+        <th field="id" hidden="true">Id</th>
+        <th field="personnelNumber" width="50">PersonnelNumber</th>
+        <th field="fullName" width="50">FullName</th>
+        <th field="sex" width="50">Sex</th>
+        <th field="birthday" width="50" data-options="formatter:formatDate">Birthday</th>
+        <th field="isRegular" checkbox="true">IsRegular</th>
+    </tr>
+    </thead>
 </table>
+<div id="pp" class="easyui-pagination" style="background: #efefef; border: 1px solid #ccc; width: 550px;">
+</div>
 <div id="toolbar">
 	<a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="newEmployee()">New Employee</a>
 	<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="editEmployee()">Edit Employee</a>
@@ -37,17 +40,17 @@
 		</div>
 		<div class="fitem">
 			<label>Sex:</label>
-			<select id="Sex" class="easyui-combobox" name="Sex" style="width:200px;">
+			<select id="Sex" class="easyui-combobox" name="Sex" style="width:200px;" data-options="required:true, prompt:'Select sex',value:''">
 				<option value="0">Male</option>
 				<option value="1">Female</option>
 			</select>
 		</div>
 		<div class="fitem">
-			<label>Birthday:</label>
-			<input class="easyui-datetimebox" name="Birthday" data-options="required:true,showSeconds:false" style="width:150px">
+			<input class="easyui-datebox" labelPosition="top" label="Birthday:" name="Birthday" data-options="showSeconds:false" required="required" style="width:150px">
 		</div>
 		<div class="fitem">
-			<input class="easyui-checkbox" id="IsRegular" name="IsRegular" label="IsRegular:">
+            <input class="easyui-checkbox" id="cbIsRegular" label="IsRegular:">
+            <input id="IsRegular" name="IsRegular" type="hidden" value="false" />
 		</div>
 	</form>
 </div>
@@ -57,61 +60,90 @@
 </div>
 
 @section Scripts{
-<script>
-	function newEmployee(){
-		$('#dlg').dialog('open').dialog('setTitle','New Employee');
-		$('#fm').form('clear');
-		url = '@Url.Action("Save", "Employee")';
-	}
+    <script>
+        $(function () {
+            $.ajax({
+                url: '@Url.Action("GetTotal", "Employee")'
+            }).done(function(result) {
+                $('#pp').pagination({
+                    total: result,
+                    pageSize: 10
+                });
+            });
 
-	function editEmployee(){
-		var row = $('#dg').datagrid('getSelected');
-		if (row){
-			$('#dlg').dialog('open').dialog('center').dialog('setTitle','Edit Employee');
-			$('#fm').form('load',row);
-			url = '@Url.Action("Update", "Employee")?id='+row.id;
-		}
-	}
+            $('#cbIsRegular').checkbox({
+                onChange: function(value) {
+                    $('#IsRegular').val(value);
+                }
+            });
+        });
 
-	function saveEmployee(){
-		$('#fm').form('submit',{
-			url: url,
-			onSubmit: function(){
-				return $(this).form('validate');
-			},
-			success: function(result){
-				var result = eval('('+result+')');
-				if (result.errorMsg){
-					$.messager.show({
-						title: 'Error',
-						msg: result.errorMsg
-					});
-				} else {
-					$('#dlg').dialog('close');        // close the dialog
-					$('#dg').datagrid('reload');    // reload the user data
-				}
-			}
-		});
-	}
+        function formatDate(date) {
+            var d = new Date(date || Date.now()),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear();
 
-	function destroyEmployee(){
-		var row = $('#dg').datagrid('getSelected');
-		if (row){
-			$.messager.confirm('Confirm','Are you sure you want to destroy this user?',function(r){
-				if (r){
-					$.post('@Url.Action("Delete", "Employee")',{id:row.id},function(result){
-						if (result.success){
-							$('#dg').datagrid('reload');    // reload the user data
-						} else {
-							$.messager.show({    // show error message
-								title: 'Error',
-								msg: result.errorMsg
-							});
-						}
-					},'json');
-				}
-			});
-		}
-	}
-</script>
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+
+            return [day, month, year].join('/');
+        }
+
+        function newEmployee(){
+            $('#dlg').dialog('open').dialog('setTitle','New Employee');
+            $('#fm').form('clear');
+            url = '@Url.Action("Save", "Employee")';
+        }
+
+        function editEmployee(){
+            var row = $('#dg').datagrid('getSelected');
+            if (row){
+                $('#dlg').dialog('open').dialog('center').dialog('setTitle','Edit Employee');
+                $('#fm').form('load',row);
+                url = '@Url.Action("Update", "Employee")?id='+row.id;
+            }
+        }
+
+        function saveEmployee(){
+            $('#fm').form('submit',{
+                url: url,
+                onSubmit: function(){
+                    return $(this).form('validate');
+                },
+                success: function(result){
+                    var result = eval('('+result+')');
+                    if (result.errorMsg){
+                        $.messager.show({
+                            title: 'Error',
+                            msg: result.errorMsg
+                        });
+                    } else {
+                        $('#dlg').dialog('close');        // close the dialog
+                        $('#dg').datagrid('reload');    // reload the user data
+                    }
+                }
+            });
+        }
+
+        function destroyEmployee(){
+            var row = $('#dg').datagrid('getSelected');
+            if (row){
+                $.messager.confirm('Confirm','Are you sure you want to destroy this user?',function(r){
+                    if (r){
+                        $.post('@Url.Action("Delete", "Employee")',{id:row.id},function(result){
+                            if (result.success){
+                                $('#dg').datagrid('reload');    // reload the user data
+                            } else {
+                                $.messager.show({    // show error message
+                                    title: 'Error',
+                                    msg: result.errorMsg
+                                });
+                            }
+                        },'json');
+                    }
+                });
+            }
+        }
+    </script>
 }
