@@ -11,9 +11,9 @@
         <th field="id" hidden="true">Id</th>
         <th field="personnelNumber" width="50">PersonnelNumber</th>
         <th field="fullName" width="50">FullName</th>
-        <th field="sex" width="50">Sex</th>
+        <th field="sex" width="50" data-options="formatter:formatSex">Sex</th>
         <th field="birthday" width="50" data-options="formatter:formatDate">Birthday</th>
-        <th field="isRegular" checkbox="true">IsRegular</th>
+        <th field="isRegular" data-options="formatter:formatCheckbox">IsRegular</th>
     </tr>
     </thead>
 </table>
@@ -77,6 +77,19 @@
                 }
             });
         });
+
+        function formatSex(value, row, index)
+        {
+            if (value == 0) {
+                return 'Male';
+            } else {
+                return 'Female';
+            }
+        }
+
+        function formatCheckbox(value, row, index) {
+            return '<input type="checkbox" disabled="disabled"' + (value ? 'checked="checked"' : '') + '/>';
+        }
 
         function formatDate(date) {
             var d = new Date(date || Date.now()),

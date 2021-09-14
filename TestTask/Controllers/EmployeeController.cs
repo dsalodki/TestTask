@@ -78,9 +78,12 @@ namespace TestTask.Controllers
         {
             _db.Employees.Add(model);
             _db.SaveChanges();
-            var employee = _db.Employees.FirstOrDefault(x => x.Id == model.Id);
-            employee.PersonnelNumber = model.Id;
-            _db.SaveChanges();
+            if (model.IsRegular)
+            {
+                var employee = _db.Employees.FirstOrDefault(x => x.Id == model.Id);
+                employee.PersonnelNumber = model.Id;
+                _db.SaveChanges();
+            }
 
             return new JsonResult(new { success = true });
         }
